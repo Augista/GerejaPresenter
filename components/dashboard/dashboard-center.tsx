@@ -72,7 +72,7 @@ export function DashboardCenter({
       <div className="flex-1 bg-linear-to-br from-background to-muted flex flex-col items-center justify-center p-8">
         <div className="text-center max-w-md">
           <h1 className="text-4xl font-bold text-foreground mb-2">
-            CorneliusPresenter
+            ChurchPresent 
           </h1>
 
           <p className="text-muted-foreground mb-6">

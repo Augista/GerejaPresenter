@@ -21,7 +21,7 @@ export default function DashboardPage() {
   const { user, loading: authLoading } = useAuth();
   const { presentations, loading: presentationsLoading } = usePresentations(user?.id || null);
   const { songs, loading: songsLoading } = useSongs(user?.id || null);
-  const { media, loading: mediaLoading } = useMedia(user?.id || null);
+  const { media, loading: mediaLoading, mutate: refreshMedia } = useMedia(user?.id || null);
   const [selectedItem, setSelectedItem] = useState<{type: 'presentation' | 'song', id: string} | null>(null);
 
   const handleLogout = useCallback(async () => {
@@ -66,11 +66,12 @@ export default function DashboardPage() {
       />
 
       {/* Right Panel */}
-      <DashboardRightPanel 
+      <DashboardRightPanel
         user={user}
         presentations={presentations}
         media={media}
         mediaLoading={mediaLoading}
+        onMediaRefresh={refreshMedia}
       />
     </div>
   );

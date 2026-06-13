@@ -225,6 +225,44 @@ export async function POST(
 }
 
 // =====================================================
+// CLEAR LYRICS (PATCH)
+// =====================================================
+
+export async function PATCH() {
+  try {
+    const supabase = getServerSupabase();
+
+    const { data: liveSession, error: sessionError } = await supabase
+      .from('live_sessions')
+      .select('id')
+      .eq('is_live', true)
+      .limit(1)
+      .maybeSingle();
+
+    if (sessionError) {
+      return NextResponse.json({ error: sessionError.message }, { status: 500 });
+    }
+
+    if (!liveSession) {
+      return NextResponse.json({ success: true });
+    }
+
+    const { error } = await supabase
+      .from('live_sessions')
+      .update({ current_section_id: null, current_song_id: null })
+      .eq('id', liveSession.id);
+
+    if (error) {
+      return NextResponse.json({ error: error.message }, { status: 500 });
+    }
+
+    return NextResponse.json({ success: true });
+  } catch (error: any) {
+    return NextResponse.json({ error: error.message || 'Unexpected error' }, { status: 500 });
+  }
+}
+
+// =====================================================
 // UPDATE LIVE MEDIA
 // =====================================================
 

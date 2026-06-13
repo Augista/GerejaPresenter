@@ -204,7 +204,7 @@ export default function SettingsPage() {
           <h2 className="text-xl font-semibold text-foreground mb-4">Display & Multi-Screen</h2>
           <div className="space-y-4">
             <p className="text-sm text-muted-foreground">
-              CorneliusPresenter supports multiple displays including:
+              ChurchPresent  supports multiple displays including:
             </p>
             <ul className="space-y-2 text-sm text-muted-foreground list-disc list-inside">
               <li>Stage Display (for musicians/speakers with notes, timer, next slide)</li>
@@ -220,7 +220,7 @@ export default function SettingsPage() {
 
         {/* About */}
         <Card className="p-6 bg-primary/5 border-primary/20">
-          <h2 className="text-xl font-semibold text-foreground mb-2">About CorneliusPresenter</h2>
+          <h2 className="text-xl font-semibold text-foreground mb-2">About ChurchPresent </h2>
           <p className="text-sm text-muted-foreground mb-4">
             Modern, minimalist presentation software for churches with advanced features including:
           </p>

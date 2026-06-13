@@ -38,7 +38,7 @@ export default function SetupPage() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted flex items-center justify-center p-4">
       <Card className="w-full max-w-md p-8">
-        <h1 className="text-3xl font-bold mb-4 text-foreground">CorneliusPresenter Setup</h1>
+        <h1 className="text-3xl font-bold mb-4 text-foreground">ChurchPresent  Setup</h1>
         
         <div className="space-y-4">
           <div className="p-4 bg-muted rounded-lg">

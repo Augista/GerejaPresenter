@@ -52,7 +52,7 @@ export default function LoginPage() {
   return (
     <div className="min-h-screen bg-linear-to-br from-background via-background to-muted flex items-center justify-center p-4">
       <Card className="w-full max-w-md p-8">
-        <h1 className="text-2xl font-bold text-foreground mb-2 text-center">CorneliusPresenter</h1>
+        <h1 className="text-2xl font-bold text-foreground mb-2 text-center">ChurchPresent </h1>
         <p className="text-muted-foreground text-center mb-6">Sign in to your account</p>
 
         <form onSubmit={handleLogin} className="space-y-4">
