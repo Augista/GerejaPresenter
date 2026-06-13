@@ -3,7 +3,6 @@
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 
-import { useState } from 'react';
 import {
   Play,
   Edit2,
@@ -26,6 +25,9 @@ interface DashboardCenterProps {
   presentations: Presentation[];
 
   songs: Song[];
+
+  liveSectionId: string | null;
+  onSectionLive: (id: string) => void;
 }
 
 
@@ -60,9 +62,9 @@ export function DashboardCenter({
   selectedItem,
   presentations,
   songs,
+  liveSectionId,
+  onSectionLive,
 }: DashboardCenterProps) {
-  const [liveSectionId, setLiveSectionId] =
-  useState<string | null>(null);
   // =====================================================
   // EMPTY STATE
   // =====================================================
@@ -307,8 +309,7 @@ export function DashboardCenter({
                   <Card
                     key={section.id}
                     onClick={() => {
-                      setLiveSectionId(section.id);
-
+                      onSectionLive(section.id);
                       goLive(song, section.id);
                     }}
 className={`

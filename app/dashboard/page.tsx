@@ -83,6 +83,7 @@ export default function DashboardPage() {
   const { songs, loading: songsLoading } = useSongs(user?.id || null);
   const { media, loading: mediaLoading, mutate: refreshMedia } = useMedia(user?.id || null);
   const [selectedItem, setSelectedItem] = useState<{type: 'presentation' | 'song', id: string} | null>(null);
+  const [liveSectionId, setLiveSectionId] = useState<string | null>(null);
 
   const handleLogout = useCallback(async () => {
     await signOut();
@@ -119,10 +120,12 @@ export default function DashboardPage() {
       />
 
       {/* Center Content Area */}
-      <DashboardCenter 
+      <DashboardCenter
         selectedItem={selectedItem}
         presentations={presentations}
         songs={songs}
+        liveSectionId={liveSectionId}
+        onSectionLive={setLiveSectionId}
       />
 
       {/* Right Panel */}
@@ -132,6 +135,7 @@ export default function DashboardPage() {
         media={media}
         mediaLoading={mediaLoading}
         onMediaRefresh={refreshMedia}
+        onClearLyricsSuccess={() => setLiveSectionId(null)}
       />
 
       {/* Mini live preview — bottom-left of center area */}

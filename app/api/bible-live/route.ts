@@ -9,17 +9,18 @@ export interface BibleLiveData {
   reference: string;
 }
 
-// Module-level state — works for single-instance deployments (standard church setup)
-let liveVerse: BibleLiveData | null = null;
+// Persist on globalThis so HMR module reloads don't wipe the verse
+const g = globalThis as any;
+if (!('_churchBibleLive' in g)) g._churchBibleLive = null;
 
 export async function GET() {
-  return NextResponse.json(liveVerse);
+  return NextResponse.json(g._churchBibleLive);
 }
 
 export async function POST(request: Request) {
   try {
     const body = await request.json();
-    liveVerse = body as BibleLiveData;
+    g._churchBibleLive = body as BibleLiveData;
     return NextResponse.json({ success: true });
   } catch {
     return NextResponse.json({ error: 'Invalid body' }, { status: 400 });
@@ -27,6 +28,6 @@ export async function POST(request: Request) {
 }
 
 export async function DELETE() {
-  liveVerse = null;
+  g._churchBibleLive = null;
   return NextResponse.json({ success: true });
 }

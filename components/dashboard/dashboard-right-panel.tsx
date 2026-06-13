@@ -48,6 +48,7 @@ interface DashboardRightPanelProps {
   media: Media[];
   mediaLoading: boolean;
   onMediaRefresh?: () => void;
+  onClearLyricsSuccess?: () => void;
 }
 
 // ─── Canvas animation helpers ─────────────────────────────────────────────────
@@ -351,6 +352,7 @@ export function DashboardRightPanel({
   media,
   mediaLoading,
   onMediaRefresh,
+  onClearLyricsSuccess,
 }: DashboardRightPanelProps) {
   const [selectedLiveMedia, setSelectedLiveMedia] = useState<string | null>(null);
   const [settingMedia, setSettingMedia] = useState(false);
@@ -424,6 +426,7 @@ export function DashboardRightPanel({
       const res = await fetch('/api/live-session', { method: 'PATCH' });
       if (!res.ok) throw new Error('Failed to clear lyrics');
       toast.success('Lyrics cleared from live display');
+      onClearLyricsSuccess?.();
     } catch (e: any) {
       toast.error(e.message || 'Failed to clear lyrics');
     }

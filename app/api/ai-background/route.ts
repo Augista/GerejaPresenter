@@ -47,25 +47,33 @@ export async function POST(request: Request) {
       { role: 'user', parts: [{ text: message }] },
     ];
 
-    const res = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`,
-      {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          systemInstruction: { parts: [{ text: SYSTEM_PROMPT }] },
-          contents,
-          generationConfig: { temperature: 0.7, maxOutputTokens: 512 },
-        }),
-      }
-    );
+    const body = JSON.stringify({
+      systemInstruction: { parts: [{ text: SYSTEM_PROMPT }] },
+      contents,
+      generationConfig: { temperature: 0.7, maxOutputTokens: 512 },
+    });
 
-    if (!res.ok) {
-      const err = await res.text();
-      return NextResponse.json({ error: `Gemini error: ${err}` }, { status: 500 });
+    let res: Response | null = null;
+    for (let attempt = 0; attempt < 3; attempt++) {
+      res = await fetch(
+        `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`,
+        { method: 'POST', headers: { 'Content-Type': 'application/json' }, body }
+      );
+      if (res.status !== 429) break;
+      // Rate limited — wait before retrying (4s, 8s)
+      await new Promise((r) => setTimeout(r, 4000 * (attempt + 1)));
     }
 
-    const data = await res.json();
+    if (!res!.ok) {
+      const err = await res!.text();
+      const status = res!.status === 429 ? 429 : 500;
+      const message = res!.status === 429
+        ? 'Gemini rate limit reached. Please wait a moment and try again.'
+        : `Gemini error: ${err}`;
+      return NextResponse.json({ error: message }, { status });
+    }
+
+    const data = await res!.json();
     const raw: string = data.candidates?.[0]?.content?.parts?.[0]?.text ?? 'Could not generate a response.';
 
     const paramsMatch = raw.match(/<params>([\s\S]*?)<\/params>/);
