@@ -300,6 +300,10 @@ export async function PUT(
 
     // NO ACTIVE SESSION
     if (!liveSession) {
+      // If clearing, nothing to do — treat as success
+      if (media_id === null) {
+        return NextResponse.json({ success: true });
+      }
       return NextResponse.json(
         {
           error:

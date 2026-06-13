@@ -6,6 +6,7 @@ import { Plus, LogOut, Music, Search } from 'lucide-react';
 import Link from 'next/link';
 import { useMemo, useState } from 'react';
 import { Presentation, Song } from '@/types/database';
+import { BiblePanel } from '@/components/dashboard/bible-panel';
 
 interface DashboardSidebarProps {
   user: any;
@@ -27,7 +28,7 @@ export function DashboardSidebar({
   loading,
 }: DashboardSidebarProps) {
   const [searchQuery, setSearchQuery] = useState('');
-  const [activeTab, setActiveTab] = useState<'presentations' | 'songs'>(
+  const [activeTab, setActiveTab] = useState<'presentations' | 'songs' | 'alkitab'>(
     'presentations'
   );
 
@@ -120,21 +121,23 @@ export function DashboardSidebar({
           </Button>
         </div>
 
-        {/* Search */}
-        <div className="relative">
-          <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
+        {/* Search — hidden on Alkitab tab */}
+        {activeTab !== 'alkitab' && (
+          <div className="relative">
+            <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
 
-          <Input
-            placeholder={
-              activeTab === 'songs'
-                ? 'Cari judul, artist, atau lirik...'
-                : 'Cari presentasi...'
-            }
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="pl-8 h-9 text-sm"
-          />
-        </div>
+            <Input
+              placeholder={
+                activeTab === 'songs'
+                  ? 'Cari judul, artist, atau lirik...'
+                  : 'Cari presentasi...'
+              }
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="pl-8 h-9 text-sm"
+            />
+          </div>
+        )}
       </div>
 
       {/* Action Buttons */}
@@ -180,11 +183,24 @@ export function DashboardSidebar({
         >
           Lagu ({songs.length})
         </button>
+
+        <button
+          onClick={() => setActiveTab('alkitab')}
+          className={`text-sm font-medium pb-2 px-2 border-b-2 transition-colors ${
+            activeTab === 'alkitab'
+              ? 'border-primary text-primary'
+              : 'border-transparent text-muted-foreground hover:text-foreground'
+          }`}
+        >
+          Alkitab
+        </button>
       </div>
 
       {/* List */}
       <div className="flex-1 overflow-y-auto p-4 space-y-2">
-        {loading ? (
+        {activeTab === 'alkitab' ? (
+          <BiblePanel />
+        ) : loading ? (
           <div className="text-center py-8">
             <p className="text-sm text-muted-foreground">
               Loading...

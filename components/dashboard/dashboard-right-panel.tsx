@@ -354,6 +354,7 @@ export function DashboardRightPanel({
 }: DashboardRightPanelProps) {
   const [selectedLiveMedia, setSelectedLiveMedia] = useState<string | null>(null);
   const [settingMedia, setSettingMedia] = useState(false);
+  const [gridCols, setGridCols] = useState<2 | 3 | 4>(4);
 
   const [chatMessages, setChatMessages] = useState<ChatMessage[]>([
     {
@@ -694,8 +695,8 @@ export function DashboardRightPanel({
         </div>
 
         {/* ── Media gallery (Select for Live) ── */}
-        <div className="px-4 py-4 border-b border-border">
-          <div className="flex items-center justify-between mb-3">
+        <div className="px-4 py-4 border-b border-border flex flex-col">
+          <div className="flex items-center justify-between mb-2">
             <p className="text-sm font-semibold text-foreground">Select for Live</p>
             <div className="flex items-center gap-1">
               {onMediaRefresh && (
@@ -723,49 +724,82 @@ export function DashboardRightPanel({
               )}
             </div>
           </div>
-          <div className="space-y-2">
+
+          {/* Grid layout picker */}
+          <div className="flex items-center gap-1 mb-3">
+            <span className="text-[10px] text-muted-foreground mr-1">Grid:</span>
+            {([2, 3, 4] as const).map((cols) => (
+              <button
+                key={cols}
+                onClick={() => setGridCols(cols)}
+                className={`h-5 w-7 rounded text-[10px] font-medium border transition-colors ${
+                  gridCols === cols
+                    ? 'bg-primary text-primary-foreground border-primary'
+                    : 'bg-muted text-muted-foreground border-border hover:border-primary/50'
+                }`}
+              >
+                {cols}
+              </button>
+            ))}
+          </div>
+
+          {/* Scrollable grid */}
+          <div className="overflow-y-auto max-h-64 pr-0.5">
             {mediaLoading ? (
               <p className="text-xs text-muted-foreground">Loading...</p>
             ) : media.length === 0 ? (
               <p className="text-xs text-muted-foreground">No media files</p>
             ) : (
-              media.slice(0, 6).map((item) => (
-                <Card
-                  key={item.id}
-                  className={`bg-muted border-2 overflow-hidden cursor-pointer transition-all ${
-                    selectedLiveMedia === item.id
-                      ? 'border-primary bg-primary/10'
-                      : 'border-border hover:border-primary/50'
-                  }`}
-                  onClick={() => setLiveMedia(item.id)}
-                >
-                  <div className="aspect-video bg-muted-foreground/10 flex items-center justify-center relative overflow-hidden">
-                    {item.type === 'image' ? (
-                      <div className="w-full h-full bg-linear-to-br from-primary/20 to-accent/20 flex items-center justify-center">
-                        <span className="text-2xl">🖼️</span>
-                      </div>
-                    ) : item.type === 'video' ? (
-                      <div className="w-full h-full bg-linear-to-br from-primary/30 to-primary/10 flex items-center justify-center">
-                        <span className="text-2xl">🎬</span>
-                      </div>
-                    ) : (
-                      <div className="w-full h-full bg-linear-to-br from-accent/20 to-accent/10 flex items-center justify-center">
-                        <span className="text-2xl">📁</span>
+              <div
+                className="grid gap-1.5"
+                style={{ gridTemplateColumns: `repeat(${gridCols}, minmax(0, 1fr))` }}
+              >
+                {media.map((item) => (
+                  <Card
+                    key={item.id}
+                    className={`bg-muted border-2 overflow-hidden cursor-pointer transition-all ${
+                      selectedLiveMedia === item.id
+                        ? 'border-primary bg-primary/10'
+                        : 'border-border hover:border-primary/50'
+                    }`}
+                    onClick={() => setLiveMedia(item.id)}
+                  >
+                    <div className="aspect-video bg-muted-foreground/10 relative overflow-hidden">
+                      {item.type === 'image' ? (
+                        <img
+                          src={item.url}
+                          alt={item.name}
+                          className="w-full h-full object-cover"
+                        />
+                      ) : item.type === 'video' ? (
+                        <video
+                          src={item.url}
+                          className="w-full h-full object-cover"
+                          preload="metadata"
+                          muted
+                          playsInline
+                        />
+                      ) : (
+                        <div className="w-full h-full bg-linear-to-br from-accent/20 to-accent/10 flex items-center justify-center">
+                          <span className="text-lg">📁</span>
+                        </div>
+                      )}
+                      {selectedLiveMedia === item.id && (
+                        <div className="absolute inset-0 flex items-center justify-center bg-black/30">
+                          <Check className="w-5 h-5 text-primary drop-shadow" />
+                        </div>
+                      )}
+                    </div>
+                    {gridCols <= 3 && (
+                      <div className="px-1.5 py-1">
+                        <p className="text-[10px] font-medium text-foreground truncate">
+                          {item.name || (item as any).title || 'Untitled'}
+                        </p>
                       </div>
                     )}
-                    {selectedLiveMedia === item.id && (
-                      <div className="absolute inset-0 flex items-center justify-center bg-black/20">
-                        <Check className="w-8 h-8 text-primary" />
-                      </div>
-                    )}
-                  </div>
-                  <div className="p-2">
-                    <p className="text-xs font-medium text-foreground truncate">
-                      {item.name || (item as any).title || 'Untitled'}
-                    </p>
-                  </div>
-                </Card>
-              ))
+                  </Card>
+                ))}
+              </div>
             )}
           </div>
         </div>

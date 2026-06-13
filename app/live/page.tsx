@@ -6,57 +6,38 @@ import {
 } from 'react';
 
 import { Media } from '@/types/database';
+import type { BibleLiveData } from '@/app/api/bible-live/route';
 
 export default function LivePage() {
   const [section, setSection] = useState<any>(null);
-
-  const [liveMedia, setLiveMedia] =
-    useState<Media | null>(null);
-
-  // =====================================================
-  // LOAD LIVE SESSION
-  // =====================================================
-
-  // async function loadCurrent() {
-  //   try {
-  //     const res = await fetch('/api/live-session');
-
-  //     if (!res.ok) return;
-
-  //     const data = await res.json();
-
-  //     setSection(data.section || null);
-  //     setLiveMedia(data.media || null);
-  //   } catch (err) {
-  //     console.error(err);
-  //   }
-  // }
-  async function loadCurrent() {
-  try {
-    const res = await fetch('/api/live-session');
-
-    const data = await res.json();
-
-    console.log('LIVE DATA:', data);
-
-    setSection(data.section || null);
-    setLiveMedia(data.media || null);
-  } catch (err) {
-    console.error(err);
-  }
-}
+  const [liveMedia, setLiveMedia] = useState<Media | null>(null);
+  const [bibleVerse, setBibleVerse] = useState<BibleLiveData | null>(null);
 
   // =====================================================
   // POLLING
   // =====================================================
 
   useEffect(() => {
-    loadCurrent();
+    async function poll() {
+      try {
+        const [sessionRes, bibleRes] = await Promise.all([
+          fetch('/api/live-session'),
+          fetch('/api/bible-live'),
+        ]);
 
-    const interval = setInterval(() => {
-      loadCurrent();
-    }, 3000);
+        const sessionData = await sessionRes.json();
+        setSection(sessionData.section || null);
+        setLiveMedia(sessionData.media || null);
 
+        const bibleData = await bibleRes.json();
+        setBibleVerse(bibleData || null);
+      } catch (err) {
+        console.error(err);
+      }
+    }
+
+    poll();
+    const interval = setInterval(poll, 3000);
     return () => clearInterval(interval);
   }, []);
 
@@ -161,7 +142,7 @@ export default function LivePage() {
       />
 
       {/* ================================================= */}
-      {/* LYRICS */}
+      {/* CONTENT (LYRICS or BIBLE VERSE) */}
       {/* ================================================= */}
 
       <div
@@ -180,21 +161,55 @@ export default function LivePage() {
       >
         <div className="max-w-6xl w-full text-center">
 
-          <p
-            className="
-              text-white
-              font-black
-              text-2xl
-              sm:text-4xl
-              md:text-6xl
-              lg:text-7xl
-              leading-snug
-              whitespace-pre-wrap
-              drop-shadow-[0_4px_30px_rgba(0,0,0,1)]
-            "
-          >
-            {section?.content || 'No Live Lyric'}
-          </p>
+          {bibleVerse ? (
+            <>
+              <p
+                className="
+                  text-white
+                  font-black
+                  text-2xl
+                  sm:text-4xl
+                  md:text-6xl
+                  lg:text-7xl
+                  leading-snug
+                  whitespace-pre-wrap
+                  drop-shadow-[0_4px_30px_rgba(0,0,0,1)]
+                "
+              >
+                {bibleVerse.text}
+              </p>
+              <p
+                className="
+                  text-white/70
+                  font-semibold
+                  text-base
+                  sm:text-xl
+                  md:text-2xl
+                  mt-6
+                  drop-shadow-[0_2px_10px_rgba(0,0,0,1)]
+                  tracking-wide
+                "
+              >
+                {bibleVerse.reference}
+              </p>
+            </>
+          ) : (
+            <p
+              className="
+                text-white
+                font-black
+                text-2xl
+                sm:text-4xl
+                md:text-6xl
+                lg:text-7xl
+                leading-snug
+                whitespace-pre-wrap
+                drop-shadow-[0_4px_30px_rgba(0,0,0,1)]
+              "
+            >
+              {section?.content || ' '}
+            </p>
+          )}
 
         </div>
       </div>
