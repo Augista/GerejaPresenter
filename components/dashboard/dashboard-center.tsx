@@ -134,13 +134,15 @@ export function DashboardCenter({
               </Button>
             </Link>
 
-            <Button
-              size="sm"
-              className="gap-2"
-            >
-              <Play className="w-4 h-4" />
-              Live
-            </Button>
+            <Link href="/live" target="_blank" rel="noopener noreferrer">
+              <Button
+                size="sm"
+                className="gap-2"
+              >
+                <Play className="w-4 h-4" />
+                Live
+              </Button>
+            </Link>
           </div>
         </div>
 
@@ -281,7 +283,7 @@ export function DashboardCenter({
             Edit Lirik
           </Button>
         </Link>
-              <Link href="/live">
+              <Link href="/live" target="_blank" rel="noopener noreferrer">
         <Button className="gap-2">
           <Play className="w-4 h-4" />
           Open Live

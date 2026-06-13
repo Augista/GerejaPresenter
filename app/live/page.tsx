@@ -5,33 +5,13 @@ import {
   useState,
 } from 'react';
 
-import { createClient } from '@supabase/supabase-js';
-import type { SupabaseClient } from '@supabase/supabase-js';
 import { Media } from '@/types/database';
 
 export default function LivePage() {
   const [section, setSection] = useState<any>(null);
-  const [supabase, setSupabase] =
-    useState<SupabaseClient | null>(null);
 
   const [liveMedia, setLiveMedia] =
     useState<Media | null>(null);
-
-  // =====================================================
-  // INIT
-  // =====================================================
-
-  useEffect(() => {
-    const url =
-      process.env.NEXT_PUBLIC_SUPABASE_URL;
-
-    const key =
-      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
-
-    if (!url || !key) return;
-
-    setSupabase(createClient(url, key));
-  }, []);
 
   // =====================================================
   // LOAD LIVE SESSION
@@ -193,18 +173,22 @@ export default function LivePage() {
           justify-center
           w-full
           h-full
-          p-20
+          p-6
+          sm:p-12
+          md:p-20
         "
       >
-        <div className="max-w-6xl text-center">
+        <div className="max-w-6xl w-full text-center">
 
           <p
             className="
               text-white
               font-black
-              text-6xl
-              md:text-7xl
-              leading-tight
+              text-2xl
+              sm:text-4xl
+              md:text-6xl
+              lg:text-7xl
+              leading-snug
               whitespace-pre-wrap
               drop-shadow-[0_4px_30px_rgba(0,0,0,1)]
             "

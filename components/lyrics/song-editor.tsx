@@ -19,6 +19,8 @@ import {
   Trash2,
   Save,
   Upload,
+  ClipboardPaste,
+  X,
 } from 'lucide-react';
 
 import { toast } from 'sonner';
@@ -58,6 +60,9 @@ export function SongEditor({
     useState<
       LyricSectionType[]
     >([]);
+
+  const [pasteText, setPasteText] =
+    useState('');
 
   // SONG META LOCAL
   // IMPORTANT:
@@ -214,6 +219,136 @@ export function SongEditor({
 
       toast.error(
         'Delete failed'
+      );
+    }
+  }
+
+  // =====================================================
+  // PARSE PASTE TEXT
+  // =====================================================
+
+  function parseLyricText(
+    text: string
+  ): { type: string; content: string }[] {
+    const markerRegex =
+      /^\{(verse|chorus|bridge|pre-chorus|intro|outro)\}/i;
+
+    const lines = text.split(/\r?\n/);
+    const hasMarkers = lines.some((l) =>
+      markerRegex.test(l.trim())
+    );
+
+    if (hasMarkers) {
+      const result: {
+        type: string;
+        content: string;
+      }[] = [];
+      let currentType = 'verse';
+      let currentLines: string[] = [];
+
+      for (const line of lines) {
+        const match =
+          line.trim().match(markerRegex);
+        if (match) {
+          const joined =
+            currentLines.join('\n').trim();
+          if (joined) {
+            result.push({
+              type: currentType,
+              content: joined,
+            });
+            currentLines = [];
+          }
+          currentType =
+            match[1].toLowerCase();
+        } else {
+          currentLines.push(line);
+        }
+      }
+
+      const last =
+        currentLines.join('\n').trim();
+      if (last) {
+        result.push({
+          type: currentType,
+          content: last,
+        });
+      }
+
+      return result;
+    }
+
+    // No markers: every 2 non-empty lines = 1 section
+    const nonEmpty = lines
+      .map((l) => l.trim())
+      .filter(Boolean);
+
+    const result: {
+      type: string;
+      content: string;
+    }[] = [];
+
+    for (let i = 0; i < nonEmpty.length; i += 2) {
+      result.push({
+        type: 'verse',
+        content: nonEmpty
+          .slice(i, i + 2)
+          .join('\n'),
+      });
+    }
+
+    return result;
+  }
+
+  // =====================================================
+  // IMPORT FROM PASTE
+  // =====================================================
+
+  async function handleImportFromPaste() {
+    const text = pasteText.trim();
+    if (!text) {
+      toast.error('Nothing to import');
+      return;
+    }
+
+    const parsed = parseLyricText(text);
+    if (parsed.length === 0) {
+      toast.error('Could not parse any sections');
+      return;
+    }
+
+    try {
+      const inserts = parsed.map(
+        (section, index) => ({
+          song_id: song.id,
+          type: section.type,
+          content: section.content,
+          order_index:
+            sections.length + index,
+        })
+      );
+
+      const { data, error } =
+        await supabase
+          .from('lyric_sections')
+          .insert(inserts)
+          .select();
+
+      if (error) throw error;
+
+      setSections((prev) => [
+        ...prev,
+        ...(data || []),
+      ]);
+
+      setPasteText('');
+      toast.success(
+        `${parsed.length} sections imported`
+      );
+    } catch (error: any) {
+      console.error(error);
+      toast.error(
+        error?.message || 'Import failed'
       );
     }
   }
@@ -544,9 +679,9 @@ async function handleImportText(
 
       {/* IMPORT */}
 
-      <Card className="p-6">
+      <Card className="p-6 space-y-4">
 
-        <div className="flex items-center justify-between mb-4">
+        <div className="flex items-center justify-between">
           <h3 className="font-semibold">
             Import Lyrics
           </h3>
@@ -572,7 +707,7 @@ async function handleImportText(
               }}
             />
 
-            <Button asChild>
+            <Button asChild variant="outline" size="sm">
               <span>
                 <Upload className="w-4 h-4 mr-2" />
                 Import TXT
@@ -581,11 +716,49 @@ async function handleImportText(
           </label>
         </div>
 
-        <p className="text-sm text-muted-foreground">
-          Every 2 lines
-          becomes 1 lyric
-          section automatically.
-        </p>
+        {/* PASTE LYRICS */}
+
+        <div className="space-y-2">
+          <label className="text-sm font-medium flex items-center gap-2">
+            <ClipboardPaste className="w-4 h-4" />
+            Paste Lyrics
+          </label>
+
+          <Textarea
+            value={pasteText}
+            onChange={(e) =>
+              setPasteText(e.target.value)
+            }
+            placeholder={`Paste lyrics here...\n\nUse {verse}, {chorus}, {bridge}, {pre-chorus}, {intro}, {outro} markers to auto-detect section types.\n\nWithout markers: every 2 lines = 1 section.`}
+            className="min-h-40 resize-y font-mono text-sm"
+          />
+
+          <div className="flex gap-2">
+            <Button
+              size="sm"
+              onClick={handleImportFromPaste}
+              disabled={!pasteText.trim()}
+            >
+              <Plus className="w-4 h-4 mr-2" />
+              Parse & Import
+            </Button>
+
+            {pasteText.trim() && (
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={() => setPasteText('')}
+              >
+                <X className="w-4 h-4 mr-1" />
+                Clear
+              </Button>
+            )}
+          </div>
+
+          <p className="text-xs text-muted-foreground">
+            Example: <span className="font-mono">{'{verse}'}</span> or <span className="font-mono">{'{chorus}'}</span> on its own line sets the section type and is removed from the lyrics.
+          </p>
+        </div>
       </Card>
 
       {/* SECTIONS */}

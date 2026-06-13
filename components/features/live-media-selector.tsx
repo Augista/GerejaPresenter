@@ -134,7 +134,7 @@ export function LiveMediaSelector({
               onClick={() => onSelectMedia(item)}
             >
               <div className="flex items-start gap-3">
-                <div className="flex-shrink-0 mt-1 text-primary">
+                <div className="shrink-0 mt-1 text-primary">
                   {getMediaIcon(item.type)}
                 </div>
                 <div className="flex-1 min-w-0">
