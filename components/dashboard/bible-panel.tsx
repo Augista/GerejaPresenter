@@ -50,6 +50,24 @@ export function BiblePanel() {
     (ch) => ch.chapter === selectedChapter
   );
 
+  // Sync liveKey from server so it reflects changes made by other panels (e.g. lyrics clearing bible)
+  useEffect(() => {
+    async function syncFromServer() {
+      try {
+        const res = await fetch('/api/bible-live');
+        const data = await res.json();
+        if (data?.bookCode && data?.chapter && data?.verse) {
+          setLiveKey(`${data.bookCode}-${data.chapter}-${data.verse}`);
+        } else {
+          setLiveKey(null);
+        }
+      } catch {}
+    }
+    syncFromServer();
+    const id = setInterval(syncFromServer, 3000);
+    return () => clearInterval(id);
+  }, []);
+
   const handleLive = async (verseNum: number, text: string) => {
     const key = `${selectedBook}-${selectedChapter}-${verseNum}`;
 
@@ -58,6 +76,9 @@ export function BiblePanel() {
       setLiveKey(null);
       return;
     }
+
+    // Clear lyrics when going live with a bible verse
+    await fetch('/api/live-session', { method: 'PATCH' });
 
     const reference = `${bookName} ${selectedChapter}:${verseNum}`;
     await fetch('/api/bible-live', {

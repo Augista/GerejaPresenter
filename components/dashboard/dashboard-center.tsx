@@ -37,6 +37,9 @@ const goLive = async (
   sectionId: string
 ) => {
   try {
+    // Clear bible when going live with lyrics
+    await fetch('/api/bible-live', { method: 'DELETE' });
+
     const response = await fetch('/api/live-session', {
       method: 'POST',
       headers: {

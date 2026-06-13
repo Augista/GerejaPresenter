@@ -15,12 +15,17 @@ import { DashboardRightPanel } from '@/components/dashboard/dashboard-right-pane
 
 function LiveMiniPreview() {
   const [liveData, setLiveData] = useState<{ section: any; media: any } | null>(null);
+  const [bibleVerse, setBibleVerse] = useState<any>(null);
 
   useEffect(() => {
     async function poll() {
       try {
-        const res = await fetch('/api/live-session');
-        if (res.ok) setLiveData(await res.json());
+        const [sessionRes, bibleRes] = await Promise.all([
+          fetch('/api/live-session'),
+          fetch('/api/bible-live'),
+        ]);
+        if (sessionRes.ok) setLiveData(await sessionRes.json());
+        if (bibleRes.ok) setBibleVerse(await bibleRes.json());
       } catch {}
     }
     poll();
@@ -28,7 +33,10 @@ function LiveMiniPreview() {
     return () => clearInterval(id);
   }, []);
 
-  const isLive = !!(liveData?.section?.content || liveData?.media);
+  const displayText = bibleVerse?.text
+    ? `${bibleVerse.text}\n— ${bibleVerse.reference}`
+    : (liveData?.section?.content || '');
+  const isLive = !!(bibleVerse?.text || liveData?.section?.content || liveData?.media);
 
   return (
     <div className="fixed bottom-4 z-50" style={{ left: 'calc(320px + 1rem)' }}>
@@ -61,9 +69,9 @@ function LiveMiniPreview() {
         )}
         {/* Dark overlay */}
         <div className="absolute inset-0 bg-black/45" />
-        {/* Lyric text */}
+        {/* Text content — bible verse or lyric */}
         <p className="relative z-10 text-white text-[7px] font-bold text-center px-2 leading-snug drop-shadow whitespace-pre-wrap">
-          {liveData?.section?.content || ''}
+          {displayText}
         </p>
         {/* LIVE badge */}
         {isLive && (

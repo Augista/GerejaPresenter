@@ -423,12 +423,15 @@ export function DashboardRightPanel({
 
   async function clearLyrics() {
     try {
-      const res = await fetch('/api/live-session', { method: 'PATCH' });
-      if (!res.ok) throw new Error('Failed to clear lyrics');
-      toast.success('Lyrics cleared from live display');
+      const [sessionRes] = await Promise.all([
+        fetch('/api/live-session', { method: 'PATCH' }),
+        fetch('/api/bible-live', { method: 'DELETE' }),
+      ]);
+      if (!sessionRes.ok) throw new Error('Failed to clear live display');
+      toast.success('Live display cleared');
       onClearLyricsSuccess?.();
     } catch (e: any) {
-      toast.error(e.message || 'Failed to clear lyrics');
+      toast.error(e.message || 'Failed to clear live display');
     }
   }
 
