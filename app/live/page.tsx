@@ -26,11 +26,30 @@ export default function LivePage() {
         ]);
 
         const sessionData = await sessionRes.json();
-        setSection(sessionData.section || null);
-        setLiveMedia(sessionData.media || null);
+        const nextSection = sessionData.section || null;
+        const nextMedia = sessionData.media || null;
+
+        // Only update state when data actually changed to prevent
+        // video/image remounting and restarts on every poll tick.
+        setSection((prev: any) => {
+          if (prev?.id === nextSection?.id && prev?.content === nextSection?.content) return prev;
+          return nextSection;
+        });
+        setLiveMedia(prev => {
+          if (prev?.id === nextMedia?.id) return prev;
+          return nextMedia;
+        });
 
         const bibleData = await bibleRes.json();
-        setBibleVerse(bibleData || null);
+        const nextBible = bibleData || null;
+        setBibleVerse(prev => {
+          if (
+            prev?.bookCode === nextBible?.bookCode &&
+            prev?.chapter === nextBible?.chapter &&
+            prev?.verse === nextBible?.verse
+          ) return prev;
+          return nextBible;
+        });
       } catch (err) {
         console.error(err);
       }
@@ -71,6 +90,8 @@ export default function LivePage() {
       {section?.background_type === 'video' &&
         section?.background_url && (
           <video
+            key={section.background_url}
+            src={section.background_url}
             autoPlay
             loop
             muted
@@ -83,11 +104,7 @@ export default function LivePage() {
               object-cover
               z-0
             "
-          >
-            <source
-              src={section.background_url}
-            />
-          </video>
+          />
         )}
 
       {/* ================================================= */}
@@ -111,6 +128,8 @@ export default function LivePage() {
 
       {liveMedia?.type === 'video' && (
         <video
+          key={liveMedia.url}
+          src={liveMedia.url}
           autoPlay
           loop
           muted
@@ -123,9 +142,7 @@ export default function LivePage() {
             object-cover
             z-10
           "
-        >
-          <source src={liveMedia.url} />
-        </video>
+        />
       )}
 
       {/* ================================================= */}

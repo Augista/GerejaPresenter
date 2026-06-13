@@ -18,6 +18,8 @@ interface PropertiesPanelProps {
 export function PropertiesPanel({ slideId, layerId, onUpdate }: PropertiesPanelProps) {
   const [layer, setLayer] = useState<SlideLayer | null>(null);
   const [loading, setLoading] = useState(true);
+  const [localText, setLocalText] = useState('');
+  const [localOpacity, setLocalOpacity] = useState(1);
 
   useEffect(() => {
     const loadLayer = async () => {
@@ -29,6 +31,8 @@ export function PropertiesPanel({ slideId, layerId, onUpdate }: PropertiesPanelP
           .single();
 
         setLayer(data);
+        setLocalText(data?.content?.data?.text || '');
+        setLocalOpacity(data?.opacity ?? 1);
       } catch (error) {
         console.error(' Error loading layer:', error);
       } finally {
@@ -108,11 +112,12 @@ export function PropertiesPanel({ slideId, layerId, onUpdate }: PropertiesPanelP
       {/* Opacity */}
       <div>
         <label className="text-sm font-medium text-foreground mb-2 block">
-          Opacity: {Math.round(layer.opacity * 100)}%
+          Opacity: {Math.round(localOpacity * 100)}%
         </label>
         <Slider
-          value={[layer.opacity]}
-          onValueChange={([value]) => handleUpdate({ opacity: value })}
+          value={[localOpacity]}
+          onValueChange={([value]) => setLocalOpacity(value)}
+          onValueChangeCommit={([value]) => handleUpdate({ opacity: value })}
           min={0}
           max={1}
           step={0.01}
@@ -125,11 +130,12 @@ export function PropertiesPanel({ slideId, layerId, onUpdate }: PropertiesPanelP
         <div>
           <label className="text-sm font-medium text-foreground mb-2 block">Text</label>
           <textarea
-            value={layer.content.data.text || ''}
-            onChange={(e) => handleUpdate({
+            value={localText}
+            onChange={(e) => setLocalText(e.target.value)}
+            onBlur={() => handleUpdate({
               content: {
                 ...layer.content,
-                data: { ...layer.content.data, text: e.target.value }
+                data: { ...layer.content.data, text: localText }
               }
             })}
             placeholder="Enter text..."
