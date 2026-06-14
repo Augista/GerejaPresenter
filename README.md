@@ -1,4 +1,4 @@
-# ProPresenter - Modern Church Presentation Software
+# ChurchPresenter - Modern Church Presentation Software
 
 A comprehensive, next-generation presentation software for churches built with Next.js, designed for worship leaders, tech operators, and speakers.
 
